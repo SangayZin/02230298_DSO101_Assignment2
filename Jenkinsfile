@@ -69,16 +69,40 @@ pipeline {
       steps {
         script {
           try {
-            echo 'Building Docker images...'
-            sh "docker build -f backend/Dockerfile -t ${env.BACKEND_IMAGE} . || true"
-            sh "docker build -f frontend/Dockerfile -t ${env.FRONTEND_IMAGE} . || true"
-            echo 'Docker images built successfully!'
+            echo '========================================='
+            echo 'STAGE: Building Docker Images'
+            echo '========================================='
+            sh "docker build -f backend/Dockerfile -t ${env.BACKEND_IMAGE} ."
+            sh "docker build -f frontend/Dockerfile -t ${env.FRONTEND_IMAGE} ."
+            echo '✅ Docker images built successfully!'
             
-            echo 'Listing built Docker images:'
-            sh 'docker images | grep -E "fe-todo|be-todo" || echo "Images still building..."'
+            echo ''
+            echo '========================================='
+            echo 'STAGE: Pushing to Docker Hub'
+            echo '========================================='
+            
+            withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+              echo "Logging in to Docker Hub as ${DOCKER_USER}..."
+              sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+              
+              echo "Pushing ${env.BACKEND_IMAGE}..."
+              sh "docker push ${env.BACKEND_IMAGE}"
+              
+              echo "Pushing ${env.FRONTEND_IMAGE}..."
+              sh "docker push ${env.FRONTEND_IMAGE}"
+              
+              echo 'Logging out from Docker Hub...'
+              sh 'docker logout'
+            }
+            
+            echo '✅ Docker images pushed successfully to Docker Hub!'
+            echo "Backend: https://hub.docker.com/r/${env.DOCKERHUB_USERNAME}/be-todo"
+            echo "Frontend: https://hub.docker.com/r/${env.DOCKERHUB_USERNAME}/fe-todo"
+            
           } catch (Exception e) {
-            echo "WARNING: Docker build had issues: ${e.message}"
-            echo "Continuing with pipeline..."
+            echo "❌ ERROR: Docker operation failed: ${e.message}"
+            echo "Please check Docker Hub credentials and try again."
+            throw e
           }
         }
       }
