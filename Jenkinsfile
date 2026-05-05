@@ -85,11 +85,39 @@ pipeline {
               echo "Logging in to Docker Hub as ${DOCKER_USER}..."
               sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
               
+              // Push backend with retry
               echo "Pushing ${env.BACKEND_IMAGE}..."
-              sh "docker push ${env.BACKEND_IMAGE}"
+              sh '''
+                for i in {1..3}; do
+                  echo "Attempt $i of 3..."
+                  if docker push ${BACKEND_IMAGE}; then
+                    echo "✅ Backend image pushed successfully!"
+                    break
+                  else
+                    if [ $i -lt 3 ]; then
+                      echo "Push failed, waiting 30 seconds before retry..."
+                      sleep 30
+                    fi
+                  fi
+                done
+              '''
               
+              // Push frontend with retry
               echo "Pushing ${env.FRONTEND_IMAGE}..."
-              sh "docker push ${env.FRONTEND_IMAGE}"
+              sh '''
+                for i in {1..3}; do
+                  echo "Attempt $i of 3..."
+                  if docker push ${FRONTEND_IMAGE}; then
+                    echo "✅ Frontend image pushed successfully!"
+                    break
+                  else
+                    if [ $i -lt 3 ]; then
+                      echo "Push failed, waiting 30 seconds before retry..."
+                      sleep 30
+                    fi
+                  fi
+                done
+              '''
               
               echo 'Logging out from Docker Hub...'
               sh 'docker logout'
