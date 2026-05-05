@@ -70,18 +70,22 @@ pipeline {
         script {
           try {
             echo 'Building Docker images...'
-            docker.build(env.BACKEND_IMAGE, '-f backend/Dockerfile .')
-            docker.build(env.FRONTEND_IMAGE, '-f frontend/Dockerfile .')
-
-            echo 'Pushing Docker images to Docker Hub...'
-            docker.withRegistry('https://registry.hub.docker.com', env.DOCKERHUB_CREDENTIALS_ID) {
-              docker.image(env.BACKEND_IMAGE).push()
-              docker.image(env.FRONTEND_IMAGE).push()
+            sh "docker build -f backend/Dockerfile -t ${env.BACKEND_IMAGE} ."
+            sh "docker build -f frontend/Dockerfile -t ${env.FRONTEND_IMAGE} ."
+            
+            echo 'Logging in to Docker Hub...'
+            withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+              sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
             }
+            
+            echo 'Pushing Docker images to Docker Hub...'
+            sh "docker push ${env.BACKEND_IMAGE}"
+            sh "docker push ${env.FRONTEND_IMAGE}"
+            
+            echo 'Docker images pushed successfully!'
           } catch (Exception e) {
-            echo "WARNING: Docker push failed: ${e.message}"
-            echo "Docker images were built successfully but could not be pushed."
-            echo "Verify Docker daemon is running on Jenkins agent and try again."
+            echo "WARNING: Docker operation failed: ${e.message}"
+            echo "Continuing with pipeline..."
           }
         }
       }
