@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build outputs
+build/
+dist/
+.next/
+out/
+
+# Test results
+coverage/
+*.log
+test-results/
+junit.xml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jenkins
+.jenkins/
+jenkins.war
+
+# Build artifacts
+backend/test-results/
+frontend/build/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+.cache/
