@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: be-todo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: PORT
+        value: 5000
+    autoDeploy: true
+
+  - type: web
+    name: fe-todo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          name: be-todo
+          type: web
+          property: hostport
+    autoDeploy: true
