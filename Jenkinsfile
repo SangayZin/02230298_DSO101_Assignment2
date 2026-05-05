@@ -36,6 +36,7 @@ pipeline {
           steps {
             dir(env.BACKEND_DIR) {
               sh 'npm install'
+              sh 'npm rebuild'
             }
           }
         }
