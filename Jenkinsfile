@@ -74,7 +74,7 @@ pipeline {
             echo '========================================='
             sh "docker build -f backend/Dockerfile -t ${env.BACKEND_IMAGE} ."
             sh "docker build -f frontend/Dockerfile -t ${env.FRONTEND_IMAGE} ."
-            echo '✅ Docker images built successfully!'
+            echo ' Docker images built successfully!'
             
             echo ''
             echo '========================================='
@@ -91,7 +91,7 @@ pipeline {
                 for i in {1..3}; do
                   echo "Attempt $i of 3..."
                   if docker push ${BACKEND_IMAGE}; then
-                    echo "✅ Backend image pushed successfully!"
+                    echo " Backend image pushed successfully!"
                     break
                   else
                     if [ $i -lt 3 ]; then
@@ -108,7 +108,7 @@ pipeline {
                 for i in {1..3}; do
                   echo "Attempt $i of 3..."
                   if docker push ${FRONTEND_IMAGE}; then
-                    echo "✅ Frontend image pushed successfully!"
+                    echo " Frontend image pushed successfully!"
                     break
                   else
                     if [ $i -lt 3 ]; then
@@ -123,12 +123,12 @@ pipeline {
               sh 'docker logout'
             }
             
-            echo '✅ Docker images pushed successfully to Docker Hub!'
+            echo ' Docker images pushed successfully to Docker Hub!'
             echo "Backend: https://hub.docker.com/r/${env.DOCKERHUB_USERNAME}/be-todo"
             echo "Frontend: https://hub.docker.com/r/${env.DOCKERHUB_USERNAME}/fe-todo"
             
           } catch (Exception e) {
-            echo "❌ ERROR: Docker operation failed: ${e.message}"
+            echo " ERROR: Docker operation failed: ${e.message}"
             echo "Please check Docker Hub credentials and try again."
             throw e
           }
